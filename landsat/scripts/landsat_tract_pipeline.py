@@ -4,10 +4,9 @@ import ee
 import geemap
 import geopandas as gpd
 
-# =========================================================
+
 # 1. EARTH ENGINE INITIALIZATION
-# =========================================================
-# Replace this with your Google Cloud project ID
+
 GEE_PROJECT_ID = "heat-islands-project"
 
 def initialize_earth_engine():
@@ -20,22 +19,18 @@ def initialize_earth_engine():
         ee.Initialize(project=GEE_PROJECT_ID)
         print("Earth Engine authenticated and initialized successfully.")
 
-# =========================================================
+
 # 2. PROJECT PATHS
-# =========================================================
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW_DATA_DIR = os.path.join(BASE_DIR, "data", "raw")
-PROCESSED_DIR = os.path.join(BASE_DIR, "data", "processed")
-EXPORTS_DIR = os.path.join(BASE_DIR, "data", "exports")
 
-os.makedirs(PROCESSED_DIR, exist_ok=True)
-os.makedirs(EXPORTS_DIR, exist_ok=True)
 
 GEOJSON_PATH = os.path.join(RAW_DATA_DIR, "cleanedCensusTracts.geojson")
 
-# =========================================================
+
 # 3. LOAD GEOJSON INTO EARTH ENGINE
-# =========================================================
+
 def load_tracts():
     print(f"Loading GeoJSON from: {GEOJSON_PATH}")
 
@@ -52,9 +47,9 @@ def load_tracts():
     except Exception as e:
         raise RuntimeError(f"Error loading GeoJSON: {e}")
 
-# =========================================================
+
 # 4. LANDSAT CLOUD MASKING
-# =========================================================
+
 def mask_landsat_c2_l2(image):
     qa = image.select("QA_PIXEL")
 
@@ -67,9 +62,9 @@ def mask_landsat_c2_l2(image):
 
     return image.updateMask(mask)
 
-# =========================================================
+
 # 5. SCALE LANDSAT BANDS
-# =========================================================
+
 def scale_landsat(image):
     # Scale optical surface reflectance bands
     optical = (
@@ -84,17 +79,17 @@ def scale_landsat(image):
 
     return image.addBands(optical, overwrite=True).addBands(thermal_c)
 
-# =========================================================
+
 # 6. ADD INDICES
-# =========================================================
+
 def add_indices(image):
     ndvi = image.normalizedDifference(["SR_B5", "SR_B4"]).rename("NDVI")
     ndbi = image.normalizedDifference(["SR_B6", "SR_B5"]).rename("NDBI")
     return image.addBands([ndvi, ndbi])
 
-# =========================================================
+
 # 7. GET SUMMER COLLECTION FOR A YEAR
-# =========================================================
+
 def get_summer_collection(year, region):
     start = f"{year}-06-01"
     end = f"{year}-08-31"
@@ -122,9 +117,9 @@ def get_summer_collection(year, region):
 
     return processed
 
-# =========================================================
+
 # 8. CREATE ANNUAL SUMMER COMPOSITE
-# =========================================================
+
 def make_annual_composite(year, region):
     collection = get_summer_collection(year, region)
     image_count = collection.size().getInfo()
@@ -137,9 +132,9 @@ def make_annual_composite(year, region):
     composite = collection.median().clip(region).set("year", year)
     return composite
 
-# =========================================================
+
 # 9. SUMMARIZE BY TRACT
-# =========================================================
+
 def summarize_by_tract(year, tracts_fc, study_area):
     image = make_annual_composite(year, study_area)
 
@@ -157,10 +152,10 @@ def summarize_by_tract(year, tracts_fc, study_area):
     stats = stats.map(lambda f: f.set("year", year))
     return stats
 
-# =========================================================
+
 # 10. EXPORT TRACT-LEVEL CSV SUMMARIES
-# =========================================================
-def export_yearly_tract_stats(tracts_fc, study_area, start_year=2020, end_year=2026):
+
+def export_yearly_tract_stats(tracts_fc, study_area, start_year=2020, end_year=2025):
     print("Starting tract-level CSV exports...")
 
     for year in range(start_year, end_year + 1):
@@ -180,10 +175,10 @@ def export_yearly_tract_stats(tracts_fc, study_area, start_year=2020, end_year=2
         task.start()
         print(f"Started CSV export for {year}")
 
-# =========================================================
+
 # 11. EXPORT MULTI-BAND GEOTIFFS
-# =========================================================
-def export_yearly_multiband_images(study_area, start_year=2020, end_year=2026):
+
+def export_yearly_multiband_images(study_area, start_year=2020, end_year=2025):
     print("Starting multi-band GeoTIFF exports...")
 
     for year in range(start_year, end_year + 1):
@@ -208,10 +203,10 @@ def export_yearly_multiband_images(study_area, start_year=2020, end_year=2026):
         task.start()
         print(f"Started multi-band GeoTIFF export for {year}")
 
-# =========================================================
+
 # 12. EXPORT SEPARATE GEOTIFFS FOR EACH BAND
-# =========================================================
-def export_yearly_separate_band_images(study_area, start_year=2020, end_year=2026):
+
+def export_yearly_separate_band_images(study_area, start_year=2020, end_year=2025):
     print("Starting separate-band GeoTIFF exports...")
 
     bands = ["LST_C", "NDVI", "NDBI"]
@@ -237,9 +232,9 @@ def export_yearly_separate_band_images(study_area, start_year=2020, end_year=202
             task.start()
             print(f"Started GeoTIFF export for {band} {year}")
 
-# =========================================================
+
 # 13. MAP PREVIEW
-# =========================================================
+
 def preview_map(year, study_area, tracts_fc):
     image = make_annual_composite(year, study_area)
 
@@ -275,9 +270,9 @@ def preview_map(year, study_area, tracts_fc):
 
     return Map
 
-# =========================================================
+
 # 14. MAIN
-# =========================================================
+
 if __name__ == "__main__":
     initialize_earth_engine()
 
@@ -290,23 +285,22 @@ if __name__ == "__main__":
     print("3. Export multi-band GeoTIFFs")
     print("4. Export separate GeoTIFFs for each band")
 
-    # -----------------------------------------------------
-    # CHOOSE WHAT YOU WANT TO RUN
+
     # Uncomment the lines below as needed
-    # -----------------------------------------------------
+
 
     # Preview one year in a notebook / interactive environment
     # map_view = preview_map(2020, study_area, tracts_fc)
     # map_view
 
     # Export CSV summaries for each year
-    export_yearly_tract_stats(tracts_fc, study_area, start_year=2020, end_year=2026)
+    export_yearly_tract_stats(tracts_fc, study_area, start_year=2020, end_year=2025)
 
     # Export one multi-band GeoTIFF per year
-    export_yearly_multiband_images(study_area, start_year=2020, end_year=2026)
+    #export_yearly_multiband_images(study_area, start_year=2020, end_year=2025)
 
     # Export separate GeoTIFFs for each band and year
-    export_yearly_separate_band_images(study_area, start_year=2020, end_year=2026)
+    export_yearly_separate_band_images(study_area, start_year=2020, end_year=2025)
 
     print("\nAll requested export tasks have been submitted to Google Earth Engine.")
-    print("Check the Earth Engine Tasks tab or your Google Drive folder for results.")
+    print("Check the Earth Engine Tasks tab or Google Drive folder for results.")

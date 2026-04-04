@@ -1,12 +1,12 @@
 # Landsat Summer Heat Metrics Pipeline
 
-This project builds annual summer (June-August) Landsat composites and exports:
+This project builds annual (2020-2025) summer (June-August) Landsat composites and exports:
 
 - Tract-level CSV summaries for LST, NDVI, and NDBI
 - Yearly multi-band GeoTIFFs (LST_C, NDVI, NDBI)
 - Yearly single-band GeoTIFFs for each index/band
 
-The script targets a study area defined by census tracts in a GeoJSON file.
+The script targets Lincoln Nebraska defined by census tracts in a GeoJSON file.
 
 ## Project Structure
 
@@ -46,12 +46,12 @@ Python packages used:
 GEE_PROJECT_ID = "heat-islands-project"
 ```
 
-3. Make sure user has permission on that Google Cloud project:
+3. Make sure your user has permission on that Google Cloud project:
 
 - Role: `roles/serviceusage.serviceUsageConsumer`
 - Earth Engine API enabled in the project
 
-4. Place your GeoJSON at:
+4. Place GeoJSON at:
 
 `data/raw/cleanedCensusTracts.geojson`
 
@@ -79,7 +79,6 @@ Export destination:
 
 Notes:
 
-- The local folder `data/exports/` is created but not currently used by Earth Engine `toDrive` exports.
 - If a year has no matching imagery, that year is skipped.
 
 ## Viewing Queue and Status
