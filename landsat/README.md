@@ -15,11 +15,8 @@ landsat/
 	data/
 		raw/
 			cleanedCensusTracts.geojson
-		processed/
-		exports/
 	scripts/
 		landsat_tract_pipeline.py
-		test.py
 	README.md
 ```
 
@@ -40,7 +37,7 @@ Python packages used:
 1. Install dependencies in the project venv:
 
 ```powershell
-c:/Users/nelso/OneDrive/Desktop/landsat/.venv/Scripts/python.exe -m pip install earthengine-api geemap geopandas
+-m pip install earthengine-api geemap geopandas
 ```
 
 2. Set your Earth Engine project ID in `scripts/landsat_tract_pipeline.py`:
@@ -49,12 +46,12 @@ c:/Users/nelso/OneDrive/Desktop/landsat/.venv/Scripts/python.exe -m pip install 
 GEE_PROJECT_ID = "heat-islands-project"
 ```
 
-3. Make sure your user has permission on that Google Cloud project:
+3. Make sure user has permission on that Google Cloud project:
 
 - Role: `roles/serviceusage.serviceUsageConsumer`
 - Earth Engine API enabled in the project
 
-4. Place your study-area GeoJSON at:
+4. Place your GeoJSON at:
 
 `data/raw/cleanedCensusTracts.geojson`
 
@@ -63,7 +60,7 @@ GEE_PROJECT_ID = "heat-islands-project"
 Run:
 
 ```powershell
-c:/Users/nelso/OneDrive/Desktop/landsat/.venv/Scripts/python.exe scripts/landsat_tract_pipeline.py
+scripts/landsat_tract_pipeline.py
 ```
 
 On first run, Earth Engine may prompt browser authentication.
@@ -72,8 +69,8 @@ On first run, Earth Engine may prompt browser authentication.
 
 Current main block submits:
 
-- CSV exports: years 2020 to 2026
-- Separate-band GeoTIFF exports: years 2020 to 2026
+- CSV exports: years 2020 to 2025
+- Separate-band GeoTIFF exports: years 2020 to 2025
 - Multi-band GeoTIFF exports are available but currently commented out in main
 
 Export destination:
@@ -115,5 +112,3 @@ preview_map(2020, study_area, tracts_fc)
 	- Set `GEE_PROJECT_ID` and initialize with `ee.Initialize(project=...)`.
 - `Caller does not have required permission to use project ...`:
 	- Add the Service Usage Consumer role in IAM and wait a few minutes for propagation.
-- `Image asset ... not found`:
-	- The hardcoded scene ID may not exist; query an image collection dynamically.
